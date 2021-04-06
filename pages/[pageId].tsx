@@ -1,73 +1,95 @@
-import React from "react";
-import Head from "next/head";
+import React from 'react'
+import Head from 'next/head'
 
-import { getPageTitle, getAllPagesInSpace } from "notion-utils";
-import { NotionAPI } from "notion-client";
-import { NotionRenderer, Code, Collection, CollectionRow } from "react-notion-x";
-import { rootNotionPageId, rootNotionSpaceId } from "../site.config.js";
+import { getPageTitle, getAllPagesInSpace } from 'notion-utils'
+import { NotionAPI } from 'notion-client'
+import { NotionRenderer, Code, Collection, CollectionRow } from 'react-notion-x'
 
-const isDev = process.env.NODE_ENV === "development" || !process.env.NODE_ENV;
+import { ReactUtterances } from '../components/ReactUtterances'
+
+const isDev = process.env.NODE_ENV === 'development' || !process.env.NODE_ENV
 
 const notion = new NotionAPI({
-  authToken:
-    "32059f364a994442754cf45677c86afc7c8d7ea763d0271814f0ed3c33e819121f7263827a65f468306cf98c2ede0b57d431a3e76bb01d5ba13aee61b8c1c19536a5c505a6cbd84a8976d6b5b104",
-});
+  authToken: process.env.AUTHTOKEN
+})
+//   parsePageId(block.id) === parsePageId(site.rootNotionPageId)
 
 export const getStaticProps = async ({ params }) => {
-  const pageId = params.pageId as string;
-  const recordMap = await notion.getPage(pageId);
+  const pageId = params.pageId as string
+  const recordMap = await notion.getPage(pageId)
 
   return {
     props: {
-      recordMap,
+      recordMap
     },
-    revalidate: 1,
-  };
-};
+    revalidate: 1
+  }
+}
 
 export async function getStaticPaths() {
   if (isDev) {
     return {
       paths: [],
-      fallback: true,
-    };
+      fallback: true
+    }
   }
 
   const pages = await getAllPagesInSpace(
-    rootNotionPageId,
-    rootNotionSpaceId,
+    process.env.ROOTNOTIONPAGEID,
+    process.env.ROOTNOTIONSPACEID,
     notion.getPage.bind(notion),
     {
-      traverseCollections: false,
+      traverseCollections: false
     }
-  );
+  )
 
-  const paths = Object.keys(pages).map((pageId) => `/${pageId}`);
+  const paths = Object.keys(pages).map((pageId) => `/${pageId}`)
 
   return {
     paths,
-    fallback: true,
-  };
+    fallback: true
+  }
 }
 
 export default function NotionPage({ recordMap }) {
   if (!recordMap) {
-    return null;
+    return null
   }
-  const title = getPageTitle(recordMap);
+  const keys = Object.keys(recordMap?.block || {})
+  const block = recordMap?.block?.[keys[0]]?.value
+  const isBlogPost =
+    block.type === 'page' && block.parent_table === 'collection'
+  let comments: React.ReactNode = null
+  if (isBlogPost) {
+    comments = (
+      <ReactUtterances
+        repo='kiduckson/utterances-repo'
+        issueMap='issue-term'
+        issueTerm='title'
+        theme='github-light'
+      />
+    )
+  }
+
+  const title = getPageTitle(recordMap)
   return (
     <>
       <Head>
-        <meta name="description" content="notion blog" />
+        <meta name='description' content='notion blog' />
         <title>{title}</title>
       </Head>
 
       <NotionRenderer
-        components={{ code: Code, collection: Collection, collectionRow: CollectionRow }}
+        components={{
+          code: Code,
+          collection: Collection,
+          collectionRow: CollectionRow
+        }}
         recordMap={recordMap}
         fullPage={true}
         darkMode={false}
+        pageFooter={comments}
       />
     </>
-  );
+  )
 }

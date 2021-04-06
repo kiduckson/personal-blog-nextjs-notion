@@ -1,15 +1,16 @@
 import React from "react";
 
 import "../styles/globals.css";
-
-// core styles shared by all of react-notion-x (required)
 import "react-notion-x/src/styles.css";
 
-// used for code syntax highlighting (optional)
-import "prismjs/themes/prism-tomorrow.css";
-
-// used for collection views (optional)
 import "rc-dropdown/assets/index.css";
+
+import "prismjs";
+import "prismjs/components/prism-markup";
+import "prismjs/components/prism-javascript";
+import "prismjs/components/prism-typescript";
+import "prismjs/components/prism-bash";
+import "prismjs/themes/prism-tomorrow.css";
 
 function MyApp({ Component, pageProps }) {
   return <Component {...pageProps} />;
