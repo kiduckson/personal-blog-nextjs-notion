@@ -1,5 +1,6 @@
 import React from 'react'
 import Head from 'next/head'
+import dynamic from 'next/dynamic'
 
 import { getPageTitle, getAllPagesInSpace } from 'notion-utils'
 import { NotionAPI } from 'notion-client'
@@ -70,6 +71,13 @@ export default function NotionPage({ recordMap }) {
       />
     )
   }
+  const Pdf = dynamic(() =>
+    import('react-notion-x').then((notion) => notion.Pdf)
+  )
+
+  const Equation = dynamic(() =>
+    import('react-notion-x').then((notion) => notion.Equation)
+  )
 
   const title = getPageTitle(recordMap)
   return (
@@ -83,7 +91,9 @@ export default function NotionPage({ recordMap }) {
         components={{
           code: Code,
           collection: Collection,
-          collectionRow: CollectionRow
+          collectionRow: CollectionRow,
+          equation: Equation,
+          pdf: Pdf
         }}
         recordMap={recordMap}
         fullPage={true}
